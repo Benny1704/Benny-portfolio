@@ -1,0 +1,29 @@
+@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/jetbrains-mono';
+
+:root {
+  font-family: Archivo, Inter, ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+::selection {
+  color: oklch(0.13 0.006 35);
+  background: oklch(0.65 0.27 29);
+}
+
+:focus-visible {
+  outline: 1px solid oklch(0.65 0.27 29);
+  outline-offset: 4px;
+}
