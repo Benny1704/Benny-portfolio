@@ -151,16 +151,6 @@ const skillGroups: SkillGroup[] = [
   },
 ]
 
-const timelineSections = [
-  'Hero',
-  'About',
-  'Projects',
-  'Gallery',
-  'Skills',
-  'Awards',
-  'Contact',
-]
-
 function MaskedText({
   text,
   className,
@@ -261,19 +251,67 @@ function App() {
         })
       })
 
+      window.scrollTo(0, 0)
+
+      const preloaderContent =
+        document.querySelector<HTMLElement>('.preloader-content')
+      const nameLayer = document.querySelector<HTMLElement>('.name-layer')
+      const introBg = document.querySelector<HTMLElement>('.intro-bg')
+      const transitionPanel =
+        document.querySelector<HTMLElement>('.transition-panel')
+      const tPanelRed = document.querySelector<HTMLElement>('.t-panel-red')
+      const tPanelDark = document.querySelector<HTMLElement>('.t-panel-dark')
+      const firstName = document.querySelector<HTMLElement>('.preloader-first')
+      const lastName = document.querySelector<HTMLElement>('.preloader-last')
+      const dotName = document.querySelector<HTMLElement>('.preloader-dot')
+      const chars = gsap.utils.toArray<HTMLElement>('.char-reveal')
+
+      const getHeroNameSettle = () => {
+        if (!preloaderContent) {
+          return { x: 0, y: 0, scale: 1 }
+        }
+
+        gsap.set(preloaderContent, { clearProps: 'transform' })
+        const source = preloaderContent.getBoundingClientRect()
+        const mobile = window.innerWidth <= 768
+        const pad = mobile ? 20 : 48
+        const bottomPad = mobile
+          ? Math.max(window.innerHeight * 0.2, 168)
+          : 126
+        const targetWidth = Math.max(280, window.innerWidth - pad * 2)
+        const scale = Math.min(targetWidth / source.width, 2.65)
+        const sourceCenterX = source.left + source.width / 2
+        const sourceCenterY = source.top + source.height / 2
+        const targetCenterX = window.innerWidth / 2
+        const targetCenterY =
+          window.innerHeight - bottomPad - (source.height * scale) / 2
+
+        return {
+          x: targetCenterX - sourceCenterX,
+          y: targetCenterY - sourceCenterY,
+          scale,
+        }
+      }
+
+      const nameSettle = getHeroNameSettle()
+
       if (reduceMotion) {
-        gsap.set(
-          ['.intro-bg', '.transition-panel', '.name-layer'],
-          { display: 'none' },
-        )
-        gsap.set(['.hero-tagline', '.hero-nav', '.hero-line', '.hero-word'], {
-          autoAlpha: 1,
-          clearProps: 'clipPath,filter,scaleX,transform',
+        gsap.set(['.intro-bg', '.transition-panel', '.reveal-image-wrap'], {
+          display: 'none',
         })
+        gsap.set(nameLayer, {
+          autoAlpha: 1,
+          mixBlendMode: 'difference',
+          clearProps: 'display',
+        })
+        gsap.set(preloaderContent, nameSettle)
+        gsap.set(['.hero-tagline', '.hero-nav'], {
+          autoAlpha: 1,
+          clipPath: 'inset(0 0 0% 0)',
+        })
+        gsap.set('.hero-line', { autoAlpha: 1, scaleX: 1 })
         gsap.set(
           [
-            '.hero-word',
-            '.reveal-card',
             '.about-copy',
             '.about-photo-card',
             '.project-item',
@@ -287,42 +325,6 @@ function App() {
         return
       }
 
-      window.scrollTo(0, 0)
-
-      const preloaderContent =
-        document.querySelector<HTMLElement>('.preloader-content')
-      const heroWords = document.querySelector<HTMLElement>('.hero-words')
-      const nameLayer = document.querySelector<HTMLElement>('.name-layer')
-      const introBg = document.querySelector<HTMLElement>('.intro-bg')
-      const transitionPanel =
-        document.querySelector<HTMLElement>('.transition-panel')
-      const tPanelRed = document.querySelector<HTMLElement>('.t-panel-red')
-      const tPanelDark = document.querySelector<HTMLElement>('.t-panel-dark')
-      const chars = gsap.utils.toArray<HTMLElement>('.char-reveal')
-
-      const getNameSettle = () => {
-        if (!preloaderContent || !heroWords) {
-          return { x: 0, y: 0, scale: 1 }
-        }
-
-        gsap.set(preloaderContent, { clearProps: 'transform' })
-        const source = preloaderContent.getBoundingClientRect()
-        const target = heroWords.getBoundingClientRect()
-        const targetWidth = Math.min(target.width * 0.985, window.innerWidth - 48)
-        const scale = Math.min(targetWidth / source.width, 2.65)
-        const sourceCenterX = source.left + source.width / 2
-        const sourceCenterY = source.top + source.height / 2
-        const targetCenterX = target.left + target.width / 2
-        const targetCenterY = target.top + target.height / 2
-
-        return {
-          x: targetCenterX - sourceCenterX,
-          y: targetCenterY - sourceCenterY,
-          scale,
-        }
-      }
-
-      const nameSettle = getNameSettle()
       gsap.set(preloaderContent, {
         scale: window.innerWidth <= 600 ? 0.72 : 0.44,
         transformOrigin: '50% 50%',
@@ -335,11 +337,10 @@ function App() {
         clipPath: 'inset(0 0 100% 0)',
       })
       gsap.set('.hero-line', { autoAlpha: 0, scaleX: 0 })
-      gsap.set('.hero-word', {
-        autoAlpha: 0,
-        yPercent: 18,
-        filter: 'blur(10px)',
-      })
+      gsap.set('.reveal-image-wrap', { autoAlpha: 0 })
+      gsap.set('.reveal-seq', { scale: 0 })
+      gsap.set('.reveal-overlay', { autoAlpha: 0 })
+      gsap.set('.reveal-phrase', { autoAlpha: 0, filter: 'blur(10px)' })
 
       const intro = gsap.timeline({
         defaults: { ease: 'power3.out' },
@@ -396,18 +397,6 @@ function App() {
           '-=0.42',
         )
         .to(
-          '.hero-word',
-          {
-            autoAlpha: 1,
-            yPercent: 0,
-            filter: 'blur(0px)',
-            duration: 0.9,
-            ease: 'power3.out',
-            stagger: 0.07,
-          },
-          '-=0.36',
-        )
-        .to(
           '.hero-tagline',
           {
             autoAlpha: 1,
@@ -433,66 +422,111 @@ function App() {
           { scaleX: 1, duration: 1, ease: 'power3.inOut' },
           '<',
         )
-        .to(
-          nameLayer,
-          { autoAlpha: 0, duration: 0.24, ease: 'power2.out' },
-          '-=0.72',
-        )
-        .set([nameLayer, transitionPanel], { display: 'none' })
+        .set(nameLayer, { mixBlendMode: 'difference' }, '-=0.4')
+        .set(transitionPanel, { display: 'none' })
 
       gsap.to('.hero-bg', {
         scale: 1.18,
         yPercent: 16,
         scrollTrigger: {
-          trigger: '.hero',
+          trigger: '.scroll-wrap',
           start: 'top top',
           end: 'bottom top',
           scrub: true,
         },
       })
 
-      gsap.to('.word-luke', {
-        xPercent: -32,
-        autoAlpha: 0.54,
+      const heroScroll = gsap.timeline({
         scrollTrigger: {
-          trigger: '.hero',
-          start: '20% top',
-          end: 'bottom top',
-          scrub: true,
+          trigger: '.scroll-wrap',
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.5,
         },
       })
+      const exitLeft = window.innerWidth <= 768 ? '-38vw' : '-55vw'
+      const exitRight = window.innerWidth <= 768 ? '38vw' : '55vw'
+      heroScroll
+        .fromTo(
+          preloaderContent,
+          { x: nameSettle.x, y: nameSettle.y, scale: nameSettle.scale },
+          {
+            x: nameSettle.x,
+            y: 0,
+            duration: 0.3,
+            ease: 'none',
+            immediateRender: false,
+          },
+          0,
+        )
+        .to(
+          '.hero-tagline, .hero-nav, .hero-line',
+          { autoAlpha: 0, duration: 0.15, ease: 'none' },
+          0,
+        )
+        .fromTo(
+          '.reveal-image-wrap',
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.01, ease: 'none' },
+          0.3,
+        )
+        .fromTo(
+          '.reveal-seq',
+          { scale: 0 },
+          { scale: 1, duration: 0.7, ease: 'none' },
+          0.3,
+        )
+        .fromTo(
+          firstName,
+          { x: 0, autoAlpha: 1 },
+          {
+            x: exitLeft,
+            autoAlpha: 0,
+            duration: 0.7,
+            ease: 'none',
+            immediateRender: false,
+          },
+          0.3,
+        )
+        .fromTo(
+          [lastName, dotName],
+          { x: 0, autoAlpha: 1 },
+          {
+            x: exitRight,
+            autoAlpha: 0,
+            duration: 0.7,
+            ease: 'none',
+            immediateRender: false,
+          },
+          0.3,
+        )
+        .to(
+          '.reveal-phrase',
+          { autoAlpha: 1, filter: 'blur(0px)', duration: 0.12, ease: 'none' },
+          0.62,
+        )
+        .set(nameLayer, { autoAlpha: 0 }, 0.98)
 
-      gsap.to('.word-last', {
-        xPercent: 28,
-        autoAlpha: 0.54,
-        scrollTrigger: {
-          trigger: '.hero',
-          start: '20% top',
-          end: 'bottom top',
-          scrub: true,
-        },
-      })
-
-      gsap.fromTo(
-        '.reveal-card',
-        {
-          clipPath: 'inset(42% 32% 42% 32%)',
-          scale: 0.82,
-          filter: 'grayscale(1) contrast(1.3) brightness(0.6)',
-        },
-        {
-          clipPath: 'inset(0% 0% 0% 0%)',
-          scale: 1,
-          filter: 'grayscale(1) contrast(1.06) brightness(1)',
-          ease: 'none',
+      gsap
+        .timeline({
           scrollTrigger: {
-            trigger: '.reveal-section',
-            start: 'top 78%',
-            end: 'center center',
+            trigger: '.section-after',
+            start: 'top bottom',
+            end: 'top top',
             scrub: true,
           },
-        },
-      )
+        })
+        .to('.reveal-image-wrap', { y: '-50vh', ease: 'none', duration: 1 }, 0)
+        .to(
+          '.reveal-overlay',
+          { autoAlpha: 0.72, ease: 'none', duration: 0.66 },
+          0,
+        )
+        .to(
+          '.reveal-phrase',
+          { autoAlpha: 0, filter: 'blur(8px)', ease: 'none', duration: 0.24 },
+          0.1,
+        )
 
       gsap.from('.about-copy .split-line', {
         yPercent: 110,
@@ -702,55 +736,57 @@ function App() {
       </div>
 
       <main>
-        <section className="hero" data-timeline="Hero">
-          <div className="hero-bg" aria-hidden="true" />
-          <p className="hero-tagline">
-            Full Stack Python Developer with AI/LLM experience,
-            <br />
-            building scalable platforms from Chennai, India.
-          </p>
-          <div className="hero-words" aria-label="Benedict Thomas M">
-            <span className="hero-word word-luke">Benedict</span>
-            <span className="hero-word word-last">Thomas M.</span>
-          </div>
-          <div className="hero-line" aria-hidden="true" />
-          <div className="hero-nav">
-            <span className="version">
-              <ArrowRight weight="fill" />
-              3 Years
-            </span>
-            <nav aria-label="Social links">
-              <a href="https://github.com/Benny1704">GitHub</a>
-              <a href="https://www.linkedin.com/in/benedict-thomas-m-20395b224/">
-                LinkedIn
-              </a>
-              <a href="mailto:benedictt06@gmail.com">Email</a>
-            </nav>
-            <nav aria-label="Page sections">
-              {timelineSections.slice(2, 7).map((section) => (
-                <a key={section} href={`#${section.toLowerCase()}`}>
-                  {section}
+        <div className="scroll-wrap">
+          <section className="hero" data-timeline="Hero">
+            <div className="hero-bg" aria-hidden="true" />
+            <p className="hero-tagline">
+              Full Stack Python Developer, <em>bringing AI ideas to life,</em>
+              <br />
+              through systems, detail and scalable platforms.
+            </p>
+            <div className="hero-line" aria-hidden="true" />
+            <div className="hero-nav" id="hero-bar">
+              <span className="version">
+                <ArrowRight weight="fill" />
+                V3.0
+              </span>
+              <nav className="hero-social" aria-label="Social links">
+                <a href="#work">Behance</a>
+                <span className="sep" aria-hidden="true">/</span>
+                <a href="https://www.linkedin.com/in/benedict-thomas-m-20395b224/">
+                  LinkedIn
                 </a>
-              ))}
-            </nav>
-          </div>
-        </section>
+                <span className="sep" aria-hidden="true">/</span>
+                <a href="https://github.com/Benny1704">GitHub</a>
+              </nav>
+              <nav className="hero-menu" aria-label="Page sections">
+                <a href="#work">Work</a>
+                <a href="#info">Info</a>
+                <a href="#contact">Contact</a>
+              </nav>
+            </div>
+          </section>
+        </div>
 
-        <section className="reveal-section" aria-label="Showreel image">
-          <div className="reveal-card">
+        <div className="reveal-image-wrap" aria-hidden="true">
+          <figure className="reveal-media reveal-seq">
             <img
               src={`${CDN}/art/Untitled2.png`}
-              alt="Blue marble form against red light"
+              alt=""
             />
+          </figure>
+          <div className="reveal-frame reveal-seq">
             <span className="corner top-left" />
             <span className="corner top-right" />
             <span className="corner bottom-left" />
             <span className="corner bottom-right" />
           </div>
-          <p>Full-stack platforms, RAG systems and document AI workflows.</p>
-        </section>
+          <div className="reveal-overlay" />
+          <p className="reveal-phrase">Basically, I build systems.</p>
+        </div>
 
-        <section className="about" id="about" data-timeline="About">
+        <section className="section-after" id="info" data-timeline="Info">
+          <div className="about">
           <div className="about-copy">
             <p className="split-line">
               As a <em>Full Stack Python Developer</em>, I build scalable
@@ -780,9 +816,10 @@ function App() {
               alt="Abstract red and blue AI systems visual"
             />
           </figure>
+          </div>
         </section>
 
-        <section className="projects" id="projects" data-timeline="Projects">
+        <section className="projects" id="work" data-timeline="Work">
           <svg
             className="fluid-line-svg"
             viewBox="0 0 1400 1400"
