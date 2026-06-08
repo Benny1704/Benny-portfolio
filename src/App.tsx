@@ -7,11 +7,20 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
+import CardSwap, { Card } from './components/CardSwap'
+import FloatingLines from './components/FloatingLines'
+import Ribbons from './components/Ribbons'
 import './App.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
 const CDN = 'https://lukebaffait.fr/assets/images'
+const HERO_FLOATING_WAVES: Array<'top' | 'middle' | 'bottom'> = [
+  'top',
+  'middle',
+  'bottom',
+]
+const RIBBONS_COLORS = ['var(--accent)']
 
 type Project = {
   title: string
@@ -253,6 +262,31 @@ function App() {
 
       window.scrollTo(0, 0)
 
+      const ribbonsCursor =
+        document.querySelector<HTMLElement>('.ribbons-cursor')
+      if (ribbonsCursor) {
+        gsap.set(ribbonsCursor, { autoAlpha: 0 })
+        ScrollTrigger.create({
+          trigger: '.scroll-wrap',
+          start: 'top top',
+          end: 'bottom top',
+          onEnter: () => gsap.set(ribbonsCursor, { autoAlpha: 0 }),
+          onEnterBack: () =>
+            gsap.to(ribbonsCursor, {
+              autoAlpha: 0,
+              duration: 0.24,
+              ease: 'power2.out',
+            }),
+          onLeave: () =>
+            gsap.to(ribbonsCursor, {
+              autoAlpha: 0.82,
+              duration: 0.32,
+              ease: 'power2.out',
+            }),
+          onLeaveBack: () => gsap.set(ribbonsCursor, { autoAlpha: 0 }),
+        })
+      }
+
       const preloaderContent =
         document.querySelector<HTMLElement>('.preloader-content')
       const nameLayer = document.querySelector<HTMLElement>('.name-layer')
@@ -314,7 +348,8 @@ function App() {
           [
             '.about-copy',
             '.about-photo-card',
-            '.project-item',
+            '.project-copy-main',
+            '.work-card',
             '.gallery-card',
             '.skills-panel',
             '.award-row',
@@ -706,6 +741,16 @@ function App() {
 
   return (
     <div className="site" ref={rootRef}>
+      <div className="ribbons-cursor" aria-hidden="true">
+        <Ribbons
+          baseThickness={30}
+          colors={RIBBONS_COLORS}
+          speedMultiplier={0.5}
+          maxAge={500}
+          enableFade={false}
+          enableShaderEffect={false}
+        />
+      </div>
       <div className="intro-bg" aria-hidden="true" />
       <div className="transition-panel" aria-hidden="true">
         <div className="t-panel-dark" />
@@ -738,6 +783,21 @@ function App() {
       <main>
         <div className="scroll-wrap">
           <section className="hero" data-timeline="Hero">
+            <div className="hero-lines-layer" aria-hidden="true">
+              <FloatingLines
+                enabledWaves={HERO_FLOATING_WAVES}
+                lineCount={8}
+                lineDistance={8}
+                bendRadius={8}
+                bendStrength={-2}
+                interactive
+                parallax={true}
+                animationSpeed={1}
+                gradientStart="#e945f5"
+                gradientMid="#6f6f6f"
+                gradientEnd="#6a6a6a"
+              />
+            </div>
             <div className="hero-bg" aria-hidden="true" />
             <p className="hero-tagline">
               Full Stack Python Developer, <em>bringing AI ideas to life,</em>
@@ -833,33 +893,67 @@ function App() {
           </svg>
           <div className="section-kicker">(31)</div>
           <div className="projects-layout">
-            <div className="project-list">
-              {projects.map((project, index) => (
-                <button
-                  className={`project-item ${
-                    activeProject === index ? 'active' : ''
-                  }`}
-                  key={project.title}
-                  onFocus={() => setActiveProject(index)}
-                  onMouseEnter={() => setActiveProject(index)}
-                  type="button"
-                >
-                  <span>{project.title}</span>
-                  <small>{project.meta}</small>
-                </button>
-              ))}
-            </div>
-            <aside className="project-preview" aria-live="polite">
-              <div className="preview-meta">
-                <span>{currentProject.meta}</span>
-                <span>{currentProject.label}</span>
+            <div className="project-copy" aria-live="polite">
+              <div className="project-copy-main" key={currentProject.title}>
+                <span className="project-count">
+                  {String(activeProject + 1).padStart(2, '0')} /{' '}
+                  {String(projects.length).padStart(2, '0')}
+                </span>
+                <p className="project-meta">{currentProject.meta}</p>
+                <h2>{currentProject.title}</h2>
+                <p>{currentProject.label}</p>
               </div>
-              <img src={currentProject.image} alt="" />
-              <a href="#contact">
-                See project
+              <ol className="project-index-list" aria-label="Work sequence">
+                {projects.map((project, index) => (
+                  <li
+                    className={activeProject === index ? 'active' : ''}
+                    key={project.title}
+                  >
+                    <span className="project-index-no">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="project-index-copy">
+                      <strong>{project.title}</strong>
+                      <small>{project.meta}</small>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+              <a className="text-link" href="#contact">
+                Discuss work
                 <ArrowUpRight weight="bold" />
               </a>
-            </aside>
+            </div>
+            <div className="project-card-stage">
+              <CardSwap
+                cardDistance={60}
+                verticalDistance={70}
+                delay={5000}
+                pauseOnHover={false}
+                scrollDriven
+                scrollTrigger=".projects"
+                scrollPin=".projects-layout"
+                scrollStart="top top"
+                scrollEnd="bottom bottom"
+                onActiveIndexChange={setActiveProject}
+                onCardClick={setActiveProject}
+                width="clamp(18rem, 34vw, 34rem)"
+                height="clamp(23rem, 40vw, 31rem)"
+                className="work-card-swap"
+                easing="linear"
+              >
+                {projects.map(project => (
+                  <Card customClass="work-card" key={project.title}>
+                    <img src={project.image} alt="" />
+                    <div className="work-card-copy">
+                      <span>{project.meta}</span>
+                      <h3>{project.title}</h3>
+                      <p>{project.label}</p>
+                    </div>
+                  </Card>
+                ))}
+              </CardSwap>
+            </div>
           </div>
         </section>
 
