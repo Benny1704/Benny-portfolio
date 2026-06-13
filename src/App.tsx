@@ -7,7 +7,6 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
-import CardSwap, { Card } from './components/CardSwap'
 import FloatingLines from './components/FloatingLines'
 import Ribbons from './components/Ribbons'
 import './App.css'
@@ -876,101 +875,6 @@ function App() {
               alt="Abstract red and blue AI systems visual"
             />
           </figure>
-          </div>
-        </section>
-
-        <section className="projects" id="work" data-timeline="Work">
-          <svg
-            className="fluid-line-svg"
-            viewBox="0 0 1400 1400"
-            preserveAspectRatio="none"
-            aria-hidden="true"
-          >
-            <path
-              className="fluid-line"
-              d="M -90 10 C 320 -20 605 148 546 408 C 492 648 8 660 306 1054 C 605 1388 662 1242 862 1196 C 1055 1152 1360 1248 1544 1304"
-            />
-          </svg>
-          <div className="section-kicker">(31)</div>
-          <div className="projects-layout">
-            <div className="project-copy" aria-live="polite">
-              <div className="project-copy-main" key={currentProject.title}>
-                <span className="project-count">
-                  {String(activeProject + 1).padStart(2, '0')} /{' '}
-                  {String(projects.length).padStart(2, '0')}
-                </span>
-                <p className="project-meta">{currentProject.meta}</p>
-                <h2>{currentProject.title}</h2>
-                <p>{currentProject.label}</p>
-              </div>
-              <ol className="project-index-list" aria-label="Work sequence">
-                {projects.map((project, index) => (
-                  <li
-                    className={activeProject === index ? 'active' : ''}
-                    key={project.title}
-                  >
-                    <span className="project-index-no">
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
-                    <span className="project-index-copy">
-                      <strong>{project.title}</strong>
-                      <small>{project.meta}</small>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-              <a className="text-link" href="#contact">
-                Discuss work
-                <ArrowUpRight weight="bold" />
-              </a>
-            </div>
-            <div className="project-card-stage">
-              <CardSwap
-                cardDistance={60}
-                verticalDistance={70}
-                delay={5000}
-                pauseOnHover={false}
-                scrollDriven
-                scrollTrigger=".projects"
-                scrollPin=".projects-layout"
-                scrollStart="top top"
-                scrollEnd="bottom bottom"
-                onActiveIndexChange={setActiveProject}
-                onCardClick={setActiveProject}
-                width="clamp(18rem, 34vw, 34rem)"
-                height="clamp(23rem, 40vw, 31rem)"
-                className="work-card-swap"
-                easing="linear"
-              >
-                {projects.map(project => (
-                  <Card customClass="work-card" key={project.title}>
-                    <img src={project.image} alt="" />
-                    <div className="work-card-copy">
-                      <span>{project.meta}</span>
-                      <h3>{project.title}</h3>
-                      <p>{project.label}</p>
-                    </div>
-                  </Card>
-                ))}
-              </CardSwap>
-            </div>
-          </div>
-        </section>
-
-        <section className="gallery" id="gallery" data-timeline="Gallery">
-          <div className="gallery-pin">
-            {galleryImages.map((project, index) => (
-              <figure
-                className={`gallery-card gallery-card-${index + 1}`}
-                key={project.title}
-              >
-                <img src={project.image} alt={project.label} />
-              </figure>
-            ))}
-            <p className="gallery-phrase">
-              Built across AI document intelligence, RAG, modernization,
-              analytics and reusable UI systems.
-            </p>
           </div>
         </section>
 
