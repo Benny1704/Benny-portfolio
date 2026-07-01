@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import {
   ArrowRight,
   ArrowUpRight,
+  Brain,
   EnvelopeSimple,
+  Lightning,
+  Sparkle,
+  Stack,
 } from '@phosphor-icons/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -26,6 +30,10 @@ type Project = {
   meta: string
   image: string
   label: string
+  year: string
+  summary: string
+  tools: string[]
+  accent: string
 }
 
 type SkillGroup = {
@@ -38,36 +46,66 @@ const projects: Project[] = [
     title: 'Intellivo',
     meta: 'Company Project',
     label: 'Local AI OCR and Document Intelligence',
+    year: '2026',
+    summary:
+      'A production OCR workflow for extracting, validating and routing document data with local AI models.',
+    tools: ['Python', 'FastAPI', 'OCR', 'LLM'],
+    accent: 'oklch(0.67 0.24 29)',
     image: `${CDN}/projects/Covers/cyberDiag_web.avif`,
   },
   {
     title: 'SDLC Reverse Engineering',
     meta: 'Enterprise AI',
     label: 'Legacy Codebase Modernization',
+    year: '2025',
+    summary:
+      'A modernization system that reads legacy code, reconstructs intent and turns delivery knowledge into usable specs.',
+    tools: ['LangGraph', 'RAG', 'Python', 'React'],
+    accent: 'oklch(0.72 0.15 165)',
     image: `${CDN}/projects/Covers/Anima.avif`,
   },
   {
     title: '8-K Filing RAG',
     meta: 'Internal AI',
     label: 'SEC EDGAR and GraphRAG Platform',
+    year: '2025',
+    summary:
+      'A GraphRAG platform for SEC filings with entity-aware retrieval, structured answers and citation-first workflows.',
+    tools: ['GraphRAG', 'PostgreSQL', 'FastAPI', 'EDGAR'],
+    accent: 'oklch(0.69 0.19 285)',
     image: `${CDN}/projects/Covers/CyberDiag.avif`,
   },
   {
     title: 'Clarium Edge',
     meta: 'Product',
     label: 'Angular and React Component Platform',
+    year: '2024',
+    summary:
+      'A shared component platform built to keep multi-framework enterprise interfaces consistent and faster to ship.',
+    tools: ['React', 'Angular', 'Storybook', 'TypeScript'],
+    accent: 'oklch(0.75 0.16 85)',
     image: `${CDN}/projects/Covers/Zenith.avif`,
   },
   {
     title: 'Benefitmall',
     meta: 'Company Project',
     label: 'Insurance Platform Modernization',
+    year: '2024',
+    summary:
+      'Modernized insurance platform flows with cleaner UI architecture and reliable integration boundaries.',
+    tools: ['React', 'APIs', 'SQL', 'Auth'],
+    accent: 'oklch(0.62 0.21 240)',
     image: `${CDN}/projects/Covers/SkymcDB.avif`,
   },
   {
     title: 'SOW Tracker',
     meta: 'Internal Product',
     label: 'Business Operations Analytics',
+    year: '2024',
+    summary:
+      'A business operations tracker that turns SOW status, delivery motion and reporting data into one readable surface.',
+    tools: ['FastAPI', 'Pandas', 'Dashboards', 'PostgreSQL'],
+    accent: 'oklch(0.7 0.18 135)',
     image: `${CDN}/projects/Covers/ChromaBlock.avif`,
   },
 ]
@@ -192,10 +230,10 @@ function App() {
   const percentRef = useRef<HTMLDivElement>(null)
   const labelRef = useRef<HTMLSpanElement>(null)
   const barRef = useRef<HTMLDivElement>(null)
+  const activeProjectIndexRef = useRef(0)
   const [activeProject, setActiveProject] = useState(0)
   const [openSkill, setOpenSkill] = useState(0)
 
-  const galleryImages = useMemo(() => projects.slice(0, 7), [])
   const currentProject = projects[activeProject]
 
   useEffect(() => {
@@ -345,11 +383,12 @@ function App() {
         gsap.set('.hero-line', { autoAlpha: 1, scaleX: 1 })
         gsap.set(
           [
-            '.about-copy',
-            '.about-photo-card',
-            '.project-copy-main',
-            '.work-card',
-            '.gallery-card',
+            '.info-heading-text',
+            '.info-image-wrap',
+            '.bento-card',
+            '.info-narrative',
+            '.projects-intro',
+            '.project-stack-card',
             '.skills-panel',
             '.award-row',
             '.contact-card',
@@ -548,9 +587,22 @@ function App() {
             start: 'top bottom',
             end: 'top top',
             scrub: true,
+            onEnter: () => gsap.set('.reveal-image-wrap', { zIndex: 8 }),
+            onLeaveBack: () =>
+              gsap.set('.reveal-image-wrap', {
+                zIndex: 75,
+                visibility: 'visible',
+              }),
+            onLeave: () => gsap.set('.reveal-image-wrap', { visibility: 'hidden' }),
+            onEnterBack: () =>
+              gsap.set('.reveal-image-wrap', { visibility: 'visible' }),
           },
         })
-        .to('.reveal-image-wrap', { y: '-50vh', ease: 'none', duration: 1 }, 0)
+        .to(
+          '.reveal-image-wrap',
+          { y: '-62vh', autoAlpha: 0, ease: 'none', duration: 1 },
+          0,
+        )
         .to(
           '.reveal-overlay',
           { autoAlpha: 0.72, ease: 'none', duration: 0.66 },
@@ -562,95 +614,154 @@ function App() {
           0.1,
         )
 
-      gsap.from('.about-copy .split-line', {
-        yPercent: 110,
-        rotate: 2,
-        autoAlpha: 0,
-        duration: 0.9,
-        stagger: 0.08,
+      // Premium Info Section Animations
+      gsap.to('.info-heading-text', {
+        clipPath: 'inset(0 0 0% 0)',
+        y: 0,
+        duration: 1.1,
+        stagger: 0.15,
+        ease: 'power3.out',
         scrollTrigger: {
-          trigger: '.about',
-          start: 'top 55%',
+          trigger: '.info',
+          start: 'top 65%',
         },
       })
 
-      gsap.fromTo(
-        '.about-photo-card',
-        { yPercent: 18, filter: 'blur(22px) brightness(0.6)' },
-        {
-          yPercent: -8,
-          filter: 'blur(7px) brightness(0.74)',
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.about',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
-          },
+      gsap.to('.info-image-wrap', {
+        clipPath: 'inset(0% 0 0 0)',
+        duration: 1.2,
+        ease: 'power3.inOut',
+        scrollTrigger: {
+          trigger: '.info-image-wrap',
+          start: 'top 75%',
         },
-      )
+      })
 
-      const fluidLine = document.querySelector<SVGPathElement>('.fluid-line')
-      if (fluidLine) {
-        const length = fluidLine.getTotalLength()
-        gsap.set(fluidLine, {
-          strokeDasharray: length,
-          strokeDashoffset: length,
+      gsap.to('.info-image-wrap img', {
+        y: '10%',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.info-image-wrap',
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+        },
+      })
+
+      gsap.to('.bento-card', {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '.info-bento',
+          start: 'top 75%',
+        },
+      })
+
+      gsap.from('.info-narrative', {
+        y: 40,
+        autoAlpha: 0,
+        duration: 0.8,
+        scrollTrigger: {
+          trigger: '.info-narrative',
+          start: 'top 75%',
+        },
+      })
+
+      gsap.from('.projects-intro > *', {
+        y: 46,
+        autoAlpha: 0,
+        duration: 0.92,
+        stagger: 0.08,
+        ease: 'expo.out',
+        scrollTrigger: {
+          trigger: '.projects',
+          start: 'top 62%',
+        },
+      })
+
+      const projectCards = gsap.utils.toArray<HTMLElement>('.project-stack-card')
+
+      if (projectCards.length) {
+        gsap.set(projectCards, {
+          transformOrigin: '50% 90%',
+          force3D: true,
         })
-        gsap.to(fluidLine, {
-          strokeDashoffset: 0,
-          ease: 'none',
+        gsap.set(projectCards.slice(1), {
+          yPercent: 116,
+          scale: 0.88,
+          rotate: 5,
+          autoAlpha: 0,
+          filter: 'blur(14px)',
+        })
+        gsap.set(projectCards[0], {
+          yPercent: 0,
+          scale: 1,
+          rotate: -1,
+          autoAlpha: 1,
+          filter: 'blur(0px)',
+        })
+
+        const projectStack = gsap.timeline({
+          defaults: { ease: 'none' },
           scrollTrigger: {
             trigger: '.projects',
-            start: 'top 72%',
-            end: 'bottom top',
-            scrub: true,
+            start: 'top top',
+            end: 'bottom bottom',
+            scrub: 0.78,
+            pin: '.projects-pin',
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const nextIndex = Math.min(
+                projects.length - 1,
+                Math.round(self.progress * (projects.length - 1)),
+              )
+
+              if (activeProjectIndexRef.current !== nextIndex) {
+                activeProjectIndexRef.current = nextIndex
+                setActiveProject(nextIndex)
+              }
+
+            },
           },
         })
-      }
 
-      const gallery = gsap.timeline({
-        scrollTrigger: {
-          trigger: '.gallery',
-          start: 'top top',
-          end: '+=1400',
-          scrub: true,
-          pin: '.gallery-pin',
-        },
-      })
-      gallery
-        .fromTo(
-          '.gallery-card',
-          {
-            autoAlpha: 0.38,
-            yPercent: 60,
-            rotateY: -34,
-            rotateZ: -4,
-          },
-          {
-            autoAlpha: 1,
-            yPercent: 0,
-            rotateY: 0,
-            rotateZ: 0,
-            stagger: 0.08,
-          },
-        )
-        .to(
-          '.gallery-card:nth-child(odd)',
-          { xPercent: -78, yPercent: -18, rotateZ: -8 },
-          0.36,
-        )
-        .to(
-          '.gallery-card:nth-child(even)',
-          { xPercent: 92, yPercent: 22, rotateZ: 9 },
-          0.36,
-        )
-        .fromTo(
-          '.gallery-phrase',
-          { autoAlpha: 0, scale: 0.96, filter: 'blur(8px)' },
-          { autoAlpha: 1, scale: 1, filter: 'blur(0px)' },
-          0.5,
-        )
+        projectCards.slice(1).forEach((card, index) => {
+          const previous = projectCards[index]
+          const direction = index % 2 === 0 ? -1 : 1
+          const at = index + 0.18
+
+          projectStack
+            .to(
+              previous,
+              {
+                yPercent: -54,
+                xPercent: direction * -8,
+                scale: 0.82,
+                rotate: direction * -8,
+                autoAlpha: 0.34,
+                filter: 'blur(9px)',
+                duration: 0.76,
+              },
+              at,
+            )
+            .to(
+              card,
+              {
+                yPercent: 0,
+                scale: 1,
+                rotate: direction,
+                autoAlpha: 1,
+                filter: 'blur(0px)',
+                duration: 0.86,
+              },
+              at,
+            )
+        })
+      }
 
       gsap.from('.skills-panel', {
         y: 72,
@@ -664,7 +775,9 @@ function App() {
       })
 
       gsap.to('.skills-arrow', {
-        x: 46,
+        '--arrow-progress': 1,
+        '--arrow-head-x': '100%',
+        ease: 'none',
         scrollTrigger: {
           trigger: '.skills',
           start: 'top bottom',
@@ -845,36 +958,179 @@ function App() {
         </div>
 
         <section className="section-after" id="info" data-timeline="Info">
-          <div className="about">
-          <div className="about-copy">
-            <p className="split-line">
-              As a <em>Full Stack Python Developer</em>, I build scalable
-            </p>
-            <p className="split-line">
-              web platforms, local AI systems,
-            </p>
-            <p className="split-line">
-              <em>RAG pipelines.</em>
-            </p>
+          <div className="info">
+            <div className="info-layout">
+              {/* Sticky Left Column */}
+              <div className="info-sticky">
+                <div className="info-label">
+                  <span className="info-label-dot" aria-hidden="true" />
+                  About
+                </div>
+
+                <div className="info-hero">
+                  <h2 className="info-heading">
+                    <span className="info-heading-line">
+                      <span className="info-heading-text">
+                        I craft <em>intelligent</em>
+                      </span>
+                    </span>
+                    <span className="info-heading-line">
+                      <span className="info-heading-text">
+                        systems that
+                      </span>
+                    </span>
+                    <span className="info-heading-line">
+                      <span className="info-heading-text">
+                        <em>scale.</em>
+                      </span>
+                    </span>
+                  </h2>
+                </div>
+
+                <div className="info-cta">
+                  <a className="info-cta-btn primary" href="#skills">
+                    Explore Skills
+                    <ArrowUpRight weight="bold" />
+                  </a>
+                  <a className="info-cta-btn" href="#contact">
+                    Get in Touch
+                    <ArrowRight weight="bold" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Scrolling Right Column */}
+              <div className="info-content">
+                <figure className="info-image-wrap">
+                  <img src={`${CDN}/art/Untitled2.png`} alt="Abstract representation of AI systems" />
+                </figure>
+
+                <div className="info-narrative">
+                  <p>
+                    From backend architectures to AI-powered document intelligence,
+                    I work across the full spectrum of modern software engineering.
+                    Every system I build is designed with
+                    <strong> production readiness</strong> and
+                    <strong> real-world scale</strong> in mind.
+                  </p>
+                  <p>
+                    My core stack spans Python, FastAPI, React, TypeScript,
+                    PostgreSQL, Docker, Kafka, LangChain, LangGraph and vLLM, with
+                    deep experience in OCR pipelines, RAG systems, and enterprise
+                    modernization.
+                  </p>
+                </div>
+
+                <div className="info-bento">
+                  <div className="bento-card wide">
+                    <div className="bento-stat-num">3+</div>
+                    <div>
+                      <div className="bento-stat-label">Years of</div>
+                      <h3>Production Experience</h3>
+                      <p>Building resilient, scalable software systems.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bento-card">
+                    <div className="bento-icon" aria-hidden="true">
+                      <Brain weight="duotone" />
+                    </div>
+                    <div>
+                      <h3>AI & LLMs</h3>
+                      <p>Local inference, agents & RAG.</p>
+                    </div>
+                  </div>
+
+                  <div className="bento-card">
+                    <div className="bento-icon" aria-hidden="true">
+                      <Lightning weight="duotone" />
+                    </div>
+                    <div>
+                      <h3>Full Stack</h3>
+                      <p>From DB schemas to polished UIs.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="about-body">
-            <p>
-              I work across backend, frontend, databases, event-driven systems,
-              local LLM inference, OCR pipelines and production UI workflows.
-              My core stack includes Python, FastAPI, React, TypeScript,
-              PostgreSQL, Docker, Kafka, LangChain, LangGraph and vLLM.
-            </p>
-            <a className="text-link" href="#skills">
-              Info
-              <ArrowUpRight weight="bold" />
-            </a>
-          </div>
-          <figure className="about-photo-card">
-            <img
-              src={`${CDN}/art/Untitled2.png`}
-              alt="Abstract red and blue AI systems visual"
-            />
-          </figure>
+        </section>
+
+        <section className="projects" id="work" data-timeline="Work">
+          <div className="projects-pin">
+            <div className="projects-layout">
+              <div className="projects-intro">
+                <p className="projects-kicker">
+                  <Sparkle weight="fill" />
+                  Selected Work
+                </p>
+                <h2>
+                  Scroll through systems with a little cinematic machinery.
+                </h2>
+                <p className="projects-deck">
+                  The stack below is built for the work I actually do: AI
+                  applications, Python platforms, modernization and production
+                  UI systems.
+                </p>
+
+                <div
+                  className="project-current"
+                  key={currentProject.title}
+                  style={
+                    {
+                      '--project-accent': currentProject.accent,
+                    } as CSSProperties
+                  }
+                >
+                  <span className="project-current-meta">
+                    {currentProject.meta} / {currentProject.year}
+                  </span>
+                  <h3>{currentProject.title}</h3>
+                  <p>{currentProject.summary}</p>
+                  <div className="project-current-tags" aria-label="Project stack">
+                    {currentProject.tools.map((tool) => (
+                      <span key={tool}>{tool}</span>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="project-stack-wrap">
+                <div className="project-stack" aria-label="Featured projects">
+                  {projects.map((project, index) => (
+                    <article
+                      className="project-stack-card"
+                      key={project.title}
+                      style={
+                        {
+                          '--project-accent': project.accent,
+                          '--card-index': index,
+                        } as CSSProperties
+                      }
+                    >
+                      <figure>
+                        <img
+                          src={project.image}
+                          alt={`${project.title} project cover`}
+                        />
+                      </figure>
+                      <div className="project-card-sheen" aria-hidden="true" />
+                      <div className="project-card-top">
+                        <span>{String(index + 1).padStart(2, '0')}</span>
+                        <span>{project.year}</span>
+                      </div>
+                      <div className="project-card-copy">
+                        <Stack weight="duotone" />
+                        <span>{project.meta}</span>
+                        <h3>{project.title}</h3>
+                        <p>{project.label}</p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -890,6 +1146,7 @@ function App() {
               <ArrowUpRight weight="bold" />
             </a>
             <div className="skills-arrow" aria-hidden="true">
+              <span className="skills-arrow-line" />
               <ArrowRight weight="fill" />
             </div>
           </div>
