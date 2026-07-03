@@ -3,16 +3,13 @@ import {
   ArrowRight,
   ArrowUpRight,
   Brain,
-  EnvelopeSimple,
   Lightning,
-  Sparkle,
   Stack,
 } from '@phosphor-icons/react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import FloatingLines from './components/FloatingLines'
-import Ribbons from './components/Ribbons'
 import './App.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -23,7 +20,6 @@ const HERO_FLOATING_WAVES: Array<'top' | 'middle' | 'bottom'> = [
   'middle',
   'bottom',
 ]
-const RIBBONS_COLORS = ['var(--accent)']
 
 type Project = {
   title: string
@@ -299,31 +295,6 @@ function App() {
 
       window.scrollTo(0, 0)
 
-      const ribbonsCursor =
-        document.querySelector<HTMLElement>('.ribbons-cursor')
-      if (ribbonsCursor) {
-        gsap.set(ribbonsCursor, { autoAlpha: 0 })
-        ScrollTrigger.create({
-          trigger: '.scroll-wrap',
-          start: 'top top',
-          end: 'bottom top',
-          onEnter: () => gsap.set(ribbonsCursor, { autoAlpha: 0 }),
-          onEnterBack: () =>
-            gsap.to(ribbonsCursor, {
-              autoAlpha: 0,
-              duration: 0.24,
-              ease: 'power2.out',
-            }),
-          onLeave: () =>
-            gsap.to(ribbonsCursor, {
-              autoAlpha: 0.82,
-              duration: 0.32,
-              ease: 'power2.out',
-            }),
-          onLeaveBack: () => gsap.set(ribbonsCursor, { autoAlpha: 0 }),
-        })
-      }
-
       const preloaderContent =
         document.querySelector<HTMLElement>('.preloader-content')
       const nameLayer = document.querySelector<HTMLElement>('.name-layer')
@@ -387,11 +358,11 @@ function App() {
             '.info-image-wrap',
             '.bento-card',
             '.info-narrative',
-            '.projects-intro',
+            '.projects-copy',
             '.project-stack-card',
+            '.project-card-copy > *',
             '.skills-panel',
             '.award-row',
-            '.contact-card',
           ],
           { clearProps: 'all' },
         )
@@ -670,38 +641,59 @@ function App() {
         },
       })
 
-      gsap.from('.projects-intro > *', {
-        y: 46,
+      gsap.from('.projects-copy > *', {
+        y: 34,
         autoAlpha: 0,
-        duration: 0.92,
+        duration: 0.86,
         stagger: 0.08,
         ease: 'expo.out',
         scrollTrigger: {
           trigger: '.projects',
-          start: 'top 62%',
+          start: 'top 64%',
         },
       })
 
       const projectCards = gsap.utils.toArray<HTMLElement>('.project-stack-card')
 
       if (projectCards.length) {
+        const projectCardCopyChildren = projectCards.flatMap((card) =>
+          gsap.utils.toArray<HTMLElement>('.project-card-copy > *', card),
+        )
+
         gsap.set(projectCards, {
           transformOrigin: '50% 90%',
           force3D: true,
+          clipPath: 'inset(0% 0% 0% 0% round 8px)',
         })
         gsap.set(projectCards.slice(1), {
-          yPercent: 116,
-          scale: 0.88,
-          rotate: 5,
+          xPercent: 16,
+          yPercent: 98,
+          scale: 0.76,
+          rotate: 8,
           autoAlpha: 0,
-          filter: 'blur(14px)',
+          filter: 'blur(18px)',
+          clipPath: 'inset(9% 7% 9% 7% round 8px)',
         })
         gsap.set(projectCards[0], {
+          xPercent: 0,
           yPercent: 0,
           scale: 1,
-          rotate: -1,
+          rotate: -0.8,
           autoAlpha: 1,
           filter: 'blur(0px)',
+        })
+        gsap.set(projectCardCopyChildren, { y: 28, autoAlpha: 0 })
+        gsap.set('.project-stack-card:first-child .project-card-copy > *', {
+          y: 0,
+          autoAlpha: 1,
+        })
+        gsap.set('.project-stack-card img', {
+          scale: 1.14,
+          yPercent: 3,
+        })
+        gsap.set('.project-stack-card:first-child img', {
+          scale: 1.05,
+          yPercent: 0,
         })
 
         const projectStack = gsap.timeline({
@@ -717,48 +709,126 @@ function App() {
             onUpdate: (self) => {
               const nextIndex = Math.min(
                 projects.length - 1,
-                Math.round(self.progress * (projects.length - 1)),
+                Math.floor(self.progress * projects.length),
               )
 
               if (activeProjectIndexRef.current !== nextIndex) {
                 activeProjectIndexRef.current = nextIndex
                 setActiveProject(nextIndex)
               }
-
             },
           },
         })
 
+        projectStack
+          .to(
+            '.project-progress-fill',
+            { scaleX: 1, duration: projects.length - 1 },
+            0,
+          )
+          .to(
+            '.project-orbit',
+            {
+              rotate: (_, target: HTMLElement) =>
+                target.classList.contains('orbit-b') ? -150 : 180,
+              duration: projects.length - 1,
+            },
+            0,
+          )
+          .to(
+            '.project-stage-beam',
+            { xPercent: 58, autoAlpha: 0.86, duration: projects.length - 1 },
+            0,
+          )
+          .to(
+            '.project-stage-grid',
+            { xPercent: -8, yPercent: 6, duration: projects.length - 1 },
+            0,
+          )
+
         projectCards.slice(1).forEach((card, index) => {
           const previous = projectCards[index]
           const direction = index % 2 === 0 ? -1 : 1
-          const at = index + 0.18
+          const at = index + 0.16
+          const previousCopy = gsap.utils.toArray<HTMLElement>(
+            '.project-card-copy > *',
+            previous,
+          )
+          const nextCopy = gsap.utils.toArray<HTMLElement>(
+            '.project-card-copy > *',
+            card,
+          )
+          const previousImage = previous.querySelector('img')
+          const nextImage = card.querySelector('img')
 
           projectStack
             .to(
-              previous,
+              previousCopy,
               {
-                yPercent: -54,
-                xPercent: direction * -8,
-                scale: 0.82,
-                rotate: direction * -8,
-                autoAlpha: 0.34,
-                filter: 'blur(9px)',
-                duration: 0.76,
+                y: -22,
+                autoAlpha: 0,
+                duration: 0.26,
+                stagger: { each: 0.025, from: 'end' },
               },
               at,
             )
             .to(
-              card,
+              previousImage,
               {
-                yPercent: 0,
-                scale: 1,
-                rotate: direction,
-                autoAlpha: 1,
-                filter: 'blur(0px)',
+                scale: 1.18,
+                yPercent: -5,
+                duration: 0.78,
+              },
+              at,
+            )
+            .to(
+              previous,
+              {
+                xPercent: direction * -16,
+                yPercent: -68,
+                scale: 0.72,
+                rotate: direction * -12,
+                autoAlpha: 0.16,
+                filter: 'blur(18px)',
+                clipPath: 'inset(14% 12% 14% 12% round 8px)',
                 duration: 0.86,
               },
               at,
+            )
+            .fromTo(
+              nextImage,
+              { scale: 1.22, yPercent: 7 },
+              {
+                scale: 1.04,
+                yPercent: 0,
+                duration: 0.94,
+              },
+              at + 0.02,
+            )
+            .to(
+              card,
+              {
+                xPercent: 0,
+                yPercent: 0,
+                scale: 1,
+                rotate: direction * 0.8,
+                autoAlpha: 1,
+                filter: 'blur(0px)',
+                clipPath: 'inset(0% 0% 0% 0% round 8px)',
+                duration: 0.94,
+              },
+              at,
+            )
+            .to(
+              nextCopy,
+              {
+                y: 0,
+                autoAlpha: 1,
+                duration: 0.44,
+                stagger: 0.05,
+                ease: 'expo.out',
+              },
+              at + 0.32,
             )
         })
       }
@@ -774,9 +844,8 @@ function App() {
         },
       })
 
-      gsap.to('.skills-arrow', {
-        '--arrow-progress': 1,
-        '--arrow-head-x': '100%',
+      gsap.to('.skills-flow', {
+        '--flow-progress': 1,
         ease: 'none',
         scrollTrigger: {
           trigger: '.skills',
@@ -794,34 +863,6 @@ function App() {
         scrollTrigger: {
           trigger: '.awards',
           start: 'top 70%',
-        },
-      })
-
-      gsap.fromTo(
-        '.contact-sheet',
-        { yPercent: 18, borderTopLeftRadius: 44, borderTopRightRadius: 44 },
-        {
-          yPercent: 0,
-          borderTopLeftRadius: 0,
-          borderTopRightRadius: 0,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.contact',
-            start: 'top bottom',
-            end: 'top top',
-            scrub: true,
-          },
-        },
-      )
-
-      gsap.from('.contact-card', {
-        y: 42,
-        autoAlpha: 0,
-        duration: 0.72,
-        stagger: 0.1,
-        scrollTrigger: {
-          trigger: '.contact',
-          start: 'top 78%',
         },
       })
 
@@ -853,16 +894,6 @@ function App() {
 
   return (
     <div className="site" ref={rootRef}>
-      <div className="ribbons-cursor" aria-hidden="true">
-        <Ribbons
-          baseThickness={30}
-          colors={RIBBONS_COLORS}
-          speedMultiplier={0.5}
-          maxAge={500}
-          enableFade={false}
-          enableShaderEffect={false}
-        />
-      </div>
       <div className="intro-bg" aria-hidden="true" />
       <div className="transition-panel" aria-hidden="true">
         <div className="t-panel-dark" />
@@ -934,7 +965,7 @@ function App() {
               <nav className="hero-menu" aria-label="Page sections">
                 <a href="#work">Work</a>
                 <a href="#info">Info</a>
-                <a href="#contact">Contact</a>
+                <a href="#skills">Skills</a>
               </nav>
             </div>
           </section>
@@ -991,10 +1022,6 @@ function App() {
                   <a className="info-cta-btn primary" href="#skills">
                     Explore Skills
                     <ArrowUpRight weight="bold" />
-                  </a>
-                  <a className="info-cta-btn" href="#contact">
-                    Get in Touch
-                    <ArrowRight weight="bold" />
                   </a>
                 </div>
               </div>
@@ -1057,22 +1084,21 @@ function App() {
         </section>
 
         <section className="projects" id="work" data-timeline="Work">
+          <div className="projects-ambient" aria-hidden="true">
+            <span className="project-orbit orbit-a" />
+            <span className="project-orbit orbit-b" />
+            <span className="project-stage-beam" />
+          </div>
           <div className="projects-pin">
             <div className="projects-layout">
-              <div className="projects-intro">
-                <p className="projects-kicker">
-                  <Sparkle weight="fill" />
-                  Selected Work
-                </p>
-                <h2>
-                  Scroll through systems with a little cinematic machinery.
-                </h2>
-                <p className="projects-deck">
-                  The stack below is built for the work I actually do: AI
-                  applications, Python platforms, modernization and production
-                  UI systems.
-                </p>
-
+              <aside className="projects-copy">
+                <div className="project-stage-label">
+                  <span>Work archive</span>
+                  <span>
+                    {String(activeProject + 1).padStart(2, '0')} /{' '}
+                    {String(projects.length).padStart(2, '0')}
+                  </span>
+                </div>
                 <div
                   className="project-current"
                   key={currentProject.title}
@@ -1094,9 +1120,33 @@ function App() {
                   </div>
                 </div>
 
-              </div>
+                <ol className="project-index" aria-label="Project sequence">
+                  {projects.map((project, index) => (
+                    <li
+                      className={`project-index-item ${
+                        activeProject === index ? 'active' : ''
+                      }`}
+                      key={project.title}
+                      style={
+                        {
+                          '--project-accent': project.accent,
+                        } as CSSProperties
+                      }
+                      aria-current={activeProject === index ? 'step' : undefined}
+                    >
+                      <span>{String(index + 1).padStart(2, '0')}</span>
+                      <strong>{project.title}</strong>
+                    </li>
+                  ))}
+                </ol>
+
+                <div className="project-progress" aria-hidden="true">
+                  <span className="project-progress-fill" />
+                </div>
+              </aside>
 
               <div className="project-stack-wrap">
+                <div className="project-stage-grid" aria-hidden="true" />
                 <div className="project-stack" aria-label="Featured projects">
                   {projects.map((project, index) => (
                     <article
@@ -1116,6 +1166,7 @@ function App() {
                         />
                       </figure>
                       <div className="project-card-sheen" aria-hidden="true" />
+                      <div className="project-card-glow" aria-hidden="true" />
                       <div className="project-card-top">
                         <span>{String(index + 1).padStart(2, '0')}</span>
                         <span>{project.year}</span>
@@ -1125,6 +1176,14 @@ function App() {
                         <span>{project.meta}</span>
                         <h3>{project.title}</h3>
                         <p>{project.label}</p>
+                        <div
+                          className="project-card-tools"
+                          aria-label={`${project.title} stack`}
+                        >
+                          {project.tools.slice(0, 3).map((tool) => (
+                            <span key={tool}>{tool}</span>
+                          ))}
+                        </div>
                       </div>
                     </article>
                   ))}
@@ -1141,13 +1200,9 @@ function App() {
               Full Stack Python Developer building AI-powered platforms,
               document intelligence systems and enterprise modernization tools.
             </h2>
-            <a className="text-link skills-contact" href="#contact">
-              Contact me
-              <ArrowUpRight weight="bold" />
-            </a>
-            <div className="skills-arrow" aria-hidden="true">
-              <span className="skills-arrow-line" />
-              <ArrowRight weight="fill" />
+            <div className="skills-flow" aria-hidden="true">
+              <span className="skills-flow-track" />
+              <span className="skills-flow-marker" />
             </div>
           </div>
 
@@ -1197,44 +1252,6 @@ function App() {
           </div>
         </section>
 
-        <section className="contact" id="contact" data-timeline="Contact">
-          <div className="contact-sheet">
-            <h2>Contact</h2>
-            <div className="contact-grid">
-              <div className="contact-card contact-note">
-                <p>
-                  Let us build AI-powered full-stack systems that are fast,
-                  secure, scalable and genuinely useful.
-                </p>
-              </div>
-              <figure className="contact-card image-a">
-                <img src={`${CDN}/art/Untitled2.png`} alt="" />
-              </figure>
-              <div className="contact-card contact-note">
-                <p>
-                  Open to Full Stack Python, React + Python, AI/LLM application,
-                  RAG, document AI and enterprise platform roles.
-                </p>
-              </div>
-              <figure className="contact-card image-b">
-                <img src={`${CDN}/art/Untitled1.png`} alt="" />
-              </figure>
-            </div>
-            <div className="contact-bottom">
-              <nav aria-label="Contact links">
-                <a href="https://github.com/Benny1704">GitHub</a>
-                <a href="https://www.linkedin.com/in/benedict-thomas-m-20395b224/">
-                  LinkedIn
-                </a>
-                <a href="tel:+919962150304">Phone</a>
-              </nav>
-              <a className="mail-link" href="mailto:benedictt06@gmail.com">
-                <EnvelopeSimple weight="bold" />
-                benedictt06@gmail.com
-              </a>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="site-footer">
