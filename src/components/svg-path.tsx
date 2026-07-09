@@ -1,161 +1,100 @@
-import React, { useRef, useEffect, useState } from "react";
+import { useEffect, useRef } from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-export default function App() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
+gsap.registerPlugin(ScrollTrigger)
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+const aboutPath =
+  'M876.605 394.131C788.982 335.917 696.198 358.139 691.836 416.303C685.453 501.424 853.722 498.43 941.95 409.714C1016.1 335.156 1008.64 186.907 906.167 142.846C807.014 100.212 712.699 198.494 789.049 245.127C889.053 306.207 986.062 116.979 840.548 43.3233C743.932 -5.58141 678.027 57.1682 672.279 112.188C666.53 167.208 712.538 172.943 736.353 163.088C760.167 153.234 764.14 120.924 746.651 93.3868C717.461 47.4252 638.894 77.8642 601.018 116.979C568.164 150.908 557 201.079 576.467 246.924C593.342 286.664 630.24 310.55 671.68 302.614C756.114 286.446 729.747 206.546 681.86 186.442C630.54 164.898 492 209.318 495.026 287.644C496.837 334.494 518.402 366.466 582.455 367.287C680.013 368.538 771.538 299.456 898.634 292.434C1007.02 286.446 1192.67 309.384 1242.36 382.258C1266.99 418.39 1273.65 443.108 1247.75 474.477C1217.32 511.33 1149.4 511.259 1096.84 466.093C1044.29 420.928 1029.14 380.576 1033.97 324.172C1038.31 273.428 1069.55 228.986 1117.2 216.384C1152.2 207.128 1188.29 213.629 1194.45 245.127C1201.49 281.062 1132.22 280.104 1100.44 272.673C1065.32 264.464 1044.22 234.837 1032.77 201.413C1019.29 162.061 1029.71 131.126 1056.44 100.965C1086.19 67.4032 1143.96 54.5526 1175.78 86.1513C1207.02 117.17 1186.81 143.379 1156.22 166.691C1112.57 199.959 1052.57 186.238 999.784 155.164C957.312 130.164 899.171 63.7054 931.284 26.3214C952.068 2.12513 996.288 3.87363 1007.22 43.58C1018.15 83.2749 1003.56 122.644 975.969 163.376C948.377 204.107 907.272 255.122 913.558 321.045C919.727 385.734 990.968 497.068 1063.84 503.35C1111.46 507.456 1166.79 511.984 1175.68 464.527C1191.52 379.956 1101.26 334.985 1030.29 377.017C971.109 412.064 956.297 483.647 953.797 561.655C947.587 755.413 1197.56 941.828 936.039 1140.66C745.771 1285.32 321.926 950.737 134.536 1202.19C-6.68295 1391.68 -53.4837 1655.38 131.935 1760.5C478.381 1956.91 1124.19 1515 1201.28 1997.83C1273.66 2451.23 100.805 1864.7 303.794 2668.89'
 
-  if (!mounted) return null; // Prevent hydration mismatches
+function setTracerPosition(
+  tracer: SVGPathElement,
+  path: SVGPathElement,
+  length: number,
+  progress: number,
+) {
+  const distance = length * progress
+  const point = path.getPointAtLength(distance)
+  const before = path.getPointAtLength(Math.max(0, distance - 8))
+  const after = path.getPointAtLength(Math.min(length, distance + 8))
+  const angle =
+    (Math.atan2(after.y - before.y, after.x - before.x) * 180) / Math.PI
 
-  return (
-    <section
-      ref={containerRef}
-      className="mx-auto flex h-[350vh] w-full flex-col items-center overflow-hidden bg-[#FAFDEE] px-4 text-[#1F3A4B] relative"
-    >
-      <div className="relative flex w-full max-w-4xl flex-col items-center justify-center gap-5 text-center mt-32">
-        <h1 className="font-jakarta-sans relative z-10 text-5xl font-medium tracking-[-0.08em] lg:text-8xl">
-          The Stroke <br /> That follows the <br />
-          Scroll Progress
-        </h1>
-        <p className="font-jakarta-sans relative z-10 max-w-2xl text-xl font-medium text-[#1F3A4B]">
-          Scroll down to see the effect
-        </p>
-
-        {/* Adjusted positioning: Kept it anchored to the right, but capped its max width so it doesn't overflow off-screen */}
-        <LinePath
-          className="absolute right-0 top-10 z-0 opacity-50 md:opacity-100 pointer-events-none w-[120%] md:w-[100%] max-w-[1000px] translate-x-[10%] md:translate-x-[20%]"
-          containerRef={containerRef}
-        />
-      </div>
-
-      {/* Changed translate-y to absolute bottom positioning to guarantee it renders inside the section properly */}
-      <div className="absolute bottom-0 rounded-t-4xl font-jakarta-sans w-full bg-[#1F3A4B] pb-10 pt-16 text-[#FAFDEE]">
-        <h1 className="text-center text-[15.5vw] font-bold leading-[0.9] tracking-tighter lg:text-[16.6vw]">
-          skiperui.com
-        </h1>
-        <div className="mt-20 flex w-full flex-col items-start gap-5 px-4 font-medium lg:mt-0 lg:flex-row lg:justify-between">
-          <div className="flex w-full items-center justify-between gap-12 uppercase lg:w-fit lg:justify-center">
-            <p className="w-fit text-sm text-left">
-              punjab, india <br />
-              and online
-            </p>
-            <p className="w-fit text-right text-sm lg:text-left">
-              sep 1, 2025 <br /> the Moosa pind
-            </p>
-          </div>
-          <div className="flex w-full flex-wrap items-center justify-between gap-12 uppercase lg:w-fit lg:justify-center">
-            <p className="w-fit text-sm text-left">
-              online <br /> free
-            </p>
-            <p className="w-fit text-right text-sm lg:text-left">
-              in person tickets <br /> $600
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
+  tracer.setAttribute(
+    'transform',
+    `translate(${point.x} ${point.y}) rotate(${angle})`,
+  )
 }
 
-const LinePath = ({
-  className,
-  containerRef,
-}: {
-  className: string;
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}) => {
-  const pathRef = useRef<SVGPathElement>(null);
+export default function AboutPathAnimation() {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const pathRef = useRef<SVGPathElement>(null)
+  const tracerRef = useRef<SVGPathElement>(null)
 
   useEffect(() => {
-    let ctx: any;
+    const root = rootRef.current
+    const path = pathRef.current
+    const tracer = tracerRef.current
 
-    const initAnimation = () => {
-      // Access GSAP directly from the window object after it's injected
-      const gsap = (window as any).gsap;
-      const ScrollTrigger = (window as any).ScrollTrigger;
+    if (!root || !path || !tracer) {
+      return
+    }
 
-      if (!gsap || !ScrollTrigger || !pathRef.current || !containerRef.current) return;
+    const trigger = root.closest<HTMLElement>('.section-after') ?? root
+    const length = path.getTotalLength()
+    const reduceMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    ).matches
 
-      gsap.registerPlugin(ScrollTrigger);
+    if (reduceMotion) {
+      gsap.set(path, { strokeDasharray: length, strokeDashoffset: 0 })
+      setTracerPosition(tracer, path, length, 1)
+      return
+    }
 
-      const path = pathRef.current;
-      const length = path.getTotalLength();
+    gsap.set(path, {
+      strokeDasharray: length,
+      strokeDashoffset: length,
+    })
+    setTracerPosition(tracer, path, length, 0)
 
-      if (length === 0) return;
+    const context = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger,
+        start: 'top 72%',
+        end: 'bottom 42%',
+        scrub: 0.8,
+        onUpdate: (self) => {
+          const progress = self.progress
+          gsap.set(path, {
+            strokeDashoffset: length * (1 - progress),
+          })
+          setTracerPosition(tracer, path, length, progress)
+        },
+      })
+    }, root)
 
-      gsap.set(path, {
-        strokeDasharray: length,
-        strokeDashoffset: length * 0.5,
-      });
-
-      ctx = gsap.context(() => {
-        gsap.to(path, {
-          strokeDashoffset: 0,
-          ease: "none",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1, 
-          },
-        });
-      });
-    };
-
-    // Helper to dynamically load a script tag
-    const loadScript = (src: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-          // If already added, wait a bit for it to execute
-          setTimeout(resolve, 500);
-          return;
-        }
-        const script = document.createElement("script");
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    };
-
-    const loadDependencies = async () => {
-      try {
-        if (!(window as any).gsap) {
-          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js");
-        }
-        if (!(window as any).ScrollTrigger) {
-          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js");
-        }
-        initAnimation();
-      } catch (err) {
-        console.error("Failed to load GSAP dependencies:", err);
-      }
-    };
-
-    loadDependencies();
-
-    return () => {
-      if (ctx) ctx.revert();
-    };
-  }, [containerRef]);
+    return () => context.revert()
+  }, [])
 
   return (
-    <svg
-      viewBox="0 0 1278 2319"
-      fill="none"
-      overflow="visible"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <path
-        ref={pathRef}
-        d="M876.605 394.131C788.982 335.917 696.198 358.139 691.836 416.303C685.453 501.424 853.722 498.43 941.95 409.714C1016.1 335.156 1008.64 186.907 906.167 142.846C807.014 100.212 712.699 198.494 789.049 245.127C889.053 306.207 986.062 116.979 840.548 43.3233C743.932 -5.58141 678.027 57.1682 672.279 112.188C666.53 167.208 712.538 172.943 736.353 163.088C760.167 153.234 764.14 120.924 746.651 93.3868C717.461 47.4252 638.894 77.8642 601.018 116.979C568.164 150.908 557 201.079 576.467 246.924C593.342 286.664 630.24 310.55 671.68 302.614C756.114 286.446 729.747 206.546 681.86 186.442C630.54 164.898 492 209.318 495.026 287.644C496.837 334.494 518.402 366.466 582.455 367.287C680.013 368.538 771.538 299.456 898.634 292.434C1007.02 286.446 1192.67 309.384 1242.36 382.258C1266.99 418.39 1273.65 443.108 1247.75 474.477C1217.32 511.33 1149.4 511.259 1096.84 466.093C1044.29 420.928 1029.14 380.576 1033.97 324.172C1038.31 273.428 1069.55 228.986 1117.2 216.384C1152.2 207.128 1188.29 213.629 1194.45 245.127C1201.49 281.062 1132.22 280.104 1100.44 272.673C1065.32 264.464 1044.22 234.837 1032.77 201.413C1019.29 162.061 1029.71 131.126 1056.44 100.965C1086.19 67.4032 1143.96 54.5526 1175.78 86.1513C1207.02 117.17 1186.81 143.379 1156.22 166.691C1112.57 199.959 1052.57 186.238 999.784 155.164C957.312 130.164 899.171 63.7054 931.284 26.3214C952.068 2.12513 996.288 3.87363 1007.22 43.58C1018.15 83.2749 1003.56 122.644 975.969 163.376C948.377 204.107 907.272 255.122 913.558 321.045C919.727 385.734 990.968 497.068 1063.84 503.35C1111.46 507.456 1166.79 511.984 1175.68 464.527C1191.52 379.956 1101.26 334.985 1030.29 377.017C971.109 412.064 956.297 483.647 953.797 561.655C947.587 755.413 1197.56 941.828 936.039 1140.66C745.771 1285.32 321.926 950.737 134.536 1202.19C-6.68295 1391.68 -53.4837 1655.38 131.935 1760.5C478.381 1956.91 1124.19 1515 1201.28 1997.83C1273.66 2451.23 100.805 1864.7 303.794 2668.89"
-        stroke="#C2F84F"
-        strokeWidth="20"
-      />
-    </svg>
-  );
-};
+    <div className="about-path-layer" ref={rootRef} aria-hidden="true">
+      <svg
+        className="about-path-svg"
+        viewBox="0 0 1278 2319"
+        fill="none"
+        overflow="visible"
+        xmlns="http://www.w3.org/2000/svg"
+        preserveAspectRatio="xMidYMin meet"
+      >
+        <path className="about-path-shadow" d={aboutPath} />
+        <path className="about-path-stroke" d={aboutPath} ref={pathRef} />
+        <path
+          className="about-path-tracer"
+          d="M-36 14C-22 -12 19 -12 36 12"
+          ref={tracerRef}
+        />
+      </svg>
+    </div>
+  )
+}

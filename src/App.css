@@ -536,9 +536,59 @@ img {
   max-width: 106rem;
   margin: 0 auto;
   padding: clamp(6rem, 12vw, 14rem) clamp(1.2rem, 4vw, 5rem);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.about-path-layer {
+  position: absolute;
+  top: clamp(2rem, 5vw, 5rem);
+  left: clamp(-25rem, -18vw, -9rem);
+  z-index: 0;
+  width: min(68rem, 76vw);
+  height: calc(100% + clamp(8rem, 16vw, 16rem));
+  pointer-events: none;
+}
+
+.about-path-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 0.86;
+  filter: drop-shadow(0 0 24px oklch(0.65 0.27 29 / 0.22));
+  transform: rotate(7deg) translate(-6%, -2%);
+  transform-origin: 50% 10%;
+}
+
+.about-path-shadow,
+.about-path-stroke,
+.about-path-tracer {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.about-path-shadow {
+  stroke: oklch(0.92 0.008 75 / 0.12);
+  stroke-width: 24;
+}
+
+.about-path-stroke {
+  stroke: var(--accent-hot);
+  stroke-width: 18;
+  filter: drop-shadow(0 0 16px oklch(0.65 0.27 29 / 0.42));
+}
+
+.about-path-tracer {
+  stroke: var(--accent-hot);
+  stroke-width: 34;
+  filter: drop-shadow(0 0 18px oklch(0.65 0.27 29 / 0.7));
+  opacity: 0.95;
 }
 
 .info-layout {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   gap: clamp(4rem, 8vw, 10rem);
@@ -1997,6 +2047,17 @@ img {
     padding: clamp(4rem, 8vw, 8rem) clamp(1rem, 4vw, 2rem);
   }
 
+  .about-path-layer {
+    top: 0;
+    left: -42vw;
+    width: min(60rem, 118vw);
+    opacity: 0.48;
+  }
+
+  .about-path-svg {
+    transform: rotate(8deg) translate(-4%, -5%);
+  }
+
   .info-layout {
     grid-template-columns: 1fr;
     gap: 3rem;
@@ -2129,6 +2190,16 @@ img {
 
   .info-heading {
     font-size: clamp(3rem, 12vw, 4.5rem);
+  }
+
+  .about-path-layer {
+    left: -76vw;
+    width: 150vw;
+    opacity: 0.34;
+  }
+
+  .about-path-stroke {
+    stroke-width: 16;
   }
 
   .projects {

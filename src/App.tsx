@@ -9,6 +9,7 @@ import {
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
+import AboutPathAnimation from './components/svg-path'
 import FloatingLines from './components/FloatingLines'
 import './App.css'
 
@@ -990,6 +991,7 @@ function App() {
 
         <section className="section-after" id="info" data-timeline="Info">
           <div className="info">
+            <AboutPathAnimation />
             <div className="info-layout">
               {/* Sticky Left Column */}
               <div className="info-sticky">
